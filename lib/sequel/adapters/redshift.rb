@@ -55,6 +55,12 @@ module Sequel
       def supports_drop_table_if_exists?
         false
       end
+
+      # None of the alter table operation are combinable.
+      def combinable_alter_table_op?(op)
+        false
+      end
+
     end
 
     class Dataset < Postgres::Dataset
