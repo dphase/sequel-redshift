@@ -60,8 +60,16 @@ module Sequel
     class Dataset < Postgres::Dataset
       Database::DatasetClass = self
 
+      Dataset.def_sql_method(self, :select, [['if opts[:values]', %w'values order limit'], ['elsif server_version >= 80400', %w'with select distinct columns from join where group having window compounds order limit lock'], ['else', %w'with select distinct columns from join where group having compounds order limit lock']])
+
       def insert_returning_sql(sql)
         sql
+      end
+
+
+
+      def supports_cte?(type = :select)
+        true
       end
 
       def supports_returning?(type)
