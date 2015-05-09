@@ -27,6 +27,11 @@ module Sequel
         # do nothing here
         sql
       end
+
+      # Redshift supports window functions
+      def supports_window_functions?
+        true
+      end
     end
   end
 end
