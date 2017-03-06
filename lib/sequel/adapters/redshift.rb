@@ -62,6 +62,11 @@ module Sequel
 
       Dataset.def_sql_method(self, :select, [['if opts[:values]', %w'values order limit'], ['elsif server_version >= 80400', %w'with select distinct columns from join where group having window compounds order limit lock'], ['else', %w'with select distinct columns from join where group having compounds order limit lock']])
 
+      def initialize(*args)
+        super(*args)
+        @opts = @opts.merge(:disable_insert_returning => true).freeze
+      end
+
       def insert_returning_sql(sql)
         sql
       end
