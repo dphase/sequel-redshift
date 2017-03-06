@@ -64,28 +64,23 @@ module Sequel
 
       def initialize(*args)
         super(*args)
-        @opts = @opts.merge(:disable_insert_returning => true).freeze
-      end
-
-      def insert_returning_sql(sql)
-        sql
-      end
-
-      # Redshift supports window functions
-      def supports_window_functions?
-        true
+        @opts = @opts.merge(disable_insert_returning: true).freeze
       end
 
       def supports_cte?(type = :select)
-        true
+        true if type == :select
+      end
+
+      def supports_insert_select?
+        false
       end
 
       def supports_returning?(type)
         false
       end
 
-      def supports_insert_select?
-        false
+      def supports_window_functions?
+        true
       end
     end
   end
