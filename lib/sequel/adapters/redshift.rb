@@ -51,9 +51,9 @@ module Sequel
         super.merge(serial: false)
       end
 
-      # DROP TABLE IF EXISTS is not supported by Redshift
+      # DROP TABLE IF EXISTS is now supported by Redshift
       def supports_drop_table_if_exists?
-        false
+        true
       end
 
       # None of the alter table operation are combinable.
@@ -88,6 +88,8 @@ module Sequel
       def supports_window_functions?
         true
       end
+      
+      supports_drop_table_if_exists?
     end
   end
 end
