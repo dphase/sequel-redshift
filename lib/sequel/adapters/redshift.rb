@@ -87,9 +87,7 @@ module Sequel
 
       def supports_window_functions?
         true
-      end
-      
-      supports_drop_table_if_exists?
+      end      
     end
   end
 end
