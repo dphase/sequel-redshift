@@ -16,6 +16,10 @@ module Sequel
       # The order of column modifiers to use when defining a column.
       COLUMN_DEFINITION_ORDER = [:collate, :default, :primary_key, :dist_key, :sort_key, :null, :unique, :auto_increment, :references]
 
+      def dataset_class_default
+        Sequel::Redshift::Dataset
+      end
+
       # We need to change these default settings because they correspond to
       # Postgres configuration variables which do not exist in Redshift
       def adapter_initialize
@@ -27,9 +31,9 @@ module Sequel
       end
 
       def column_definition_primary_key_sql(sql, column)
-        result = super
-        result << ' IDENTITY' if result
-        result
+        if column[:primary_key]
+          sql << ' IDENTITY'
+        end
       end
 
       # Add DISTKEY SQL fragment to column creation SQL.
@@ -68,9 +72,11 @@ module Sequel
 
       Dataset.def_sql_method(self, :select, [['if opts[:values]', %w'values order limit'], ['elsif server_version >= 80400', %w'with select distinct columns from join where group having window compounds order limit lock'], ['else', %w'with select distinct columns from join where group having compounds order limit lock']])
 
-      def initialize(*args)
-        super(*args)
-        @opts = @opts.merge(disable_insert_returning: true).freeze
+      def initialize(db)
+        @db = db
+        @opts = {disable_insert_returning: true}.freeze
+        @cache = {}
+        freeze
       end
 
       def supports_cte?(type = :select)
