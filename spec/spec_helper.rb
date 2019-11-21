@@ -22,6 +22,9 @@ options = YAML.load(File.read(config_path))
 options.merge(logger: Logger.new(STDOUT))
 
 DB = Sequel.connect(options)
+if ENV['DEBUG_SQL'] == 'true'
+  DB.loggers << Logger.new($stdout)
+end
 # Run all the tests in a specific test schema
 DB.run "set search_path to 'sequel_redshift_adapter_test'"
 
