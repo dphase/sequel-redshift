@@ -65,6 +65,10 @@ module Sequel
         false
       end
 
+      def supports_transactional_ddl?
+        false
+      end
+
     end
 
     class Dataset < Postgres::Dataset
