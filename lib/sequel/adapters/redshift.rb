@@ -31,7 +31,7 @@ module Sequel
       end
 
       def column_definition_primary_key_sql(sql, column)
-        if column[:primary_key]
+        if column[:primary_key] && column[:type] == Integer
           sql << ' IDENTITY'
         end
       end
