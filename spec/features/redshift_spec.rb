@@ -9,6 +9,7 @@ describe "Redshift" do
   end
 
   it "inserts new record" do
+    DB.drop_table? :items
     DB.create_table :items do
       primary_key :id
       column :name, 'varchar(255)'
