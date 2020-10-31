@@ -61,6 +61,9 @@ module Sequel
         false
       end
 
+      def supports_savepoints?
+        false
+      end
     end
 
     class Dataset < Postgres::Dataset
@@ -87,7 +90,7 @@ module Sequel
 
       def supports_window_functions?
         true
-      end      
+      end
     end
   end
 end
