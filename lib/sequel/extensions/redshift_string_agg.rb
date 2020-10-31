@@ -1,5 +1,8 @@
 # frozen-string-literal: true
 #
+# Please consider using patched `string_agg` extension, it properly handles all supported DB adapters
+# including Redshift out of the box.
+#
 # The redshift_string_agg extension adds the ability to perform database-independent
 # aggregate string concatentation on Amazon Redshift.
 
