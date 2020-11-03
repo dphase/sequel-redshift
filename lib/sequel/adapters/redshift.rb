@@ -30,6 +30,19 @@ module Sequel
         super
       end
 
+      def table_exists?(name)
+        sql = <<~SQL
+          SELECT EXISTS (
+            SELECT * FROM pg_catalog.pg_class c
+            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE  n.nspname = 'public'
+            AND  c.relname = '#{name}'
+            AND  c.relkind = 'r'
+          );
+        SQL
+        DB.fetch(sql).first.fetch(:"?column?")
+      end
+
       def column_definition_primary_key_sql(sql, column)
         if column[:primary_key] && column[:type] == Integer
           sql << ' IDENTITY'
