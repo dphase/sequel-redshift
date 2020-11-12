@@ -40,7 +40,7 @@ module Sequel
             AND  c.relkind = 'r'
           );
         SQL
-        DB.fetch(sql).first.fetch(:"?column?")
+        fetch(sql).first.fetch(:"?column?")
       end
 
       def column_definition_primary_key_sql(sql, column)
