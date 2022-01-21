@@ -49,6 +49,11 @@ module Sequel
       def type_literal_generic_string(column)
         "#{ column[:fixed] ? 'char' : 'varchar' }(#{ column[:size] || REDSHIFT_STRING_MAXIMUM_SIZE })"
       end
+
+      # The version of the PostgreSQL server, used for determining capability.
+      def server_version(server=nil)
+        @server_version ||= 80002
+      end
     end
   end
 end
