@@ -56,13 +56,23 @@ module Sequel
       end
 
       def create_table_suffix_sql(name, options)
+        sql = create_table_attributes(name, options)
+        "#{super}#{sql}"
+      end
+
+      def create_table_attributes(name, options)
         sql = String.new
         sql << " DISTSTYLE #{options[:diststyle].upcase}" if options[:diststyle]
         sql << " DISTKEY(#{options[:distkey]})" if options[:distkey]
         sql << " SORTKEY(#{Array(options[:sortkey]).join(', ')})" if options[:sortkey]
-        "#{super}#{sql}"
+        sql
       end
 
+      def create_table_as_sql(name, sql, options)
+        result  = create_table_prefix_sql(name, options)
+        result += create_table_attributes(name, options)
+        result += " AS #{sql}"
+      end
     end
   end
 end
