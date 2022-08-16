@@ -47,13 +47,22 @@ module Sequel
 
       # Redshift changes text to varchar with maximum size of 256, and it complains if you will give text column
       def type_literal_generic_string(column)
-        "#{ column[:fixed] ? 'char' : 'varchar' }(#{ column[:size] || REDSHIFT_STRING_MAXIMUM_SIZE })"
+        "#{column[:fixed] ? 'CHAR' : 'VARCHAR'}(#{column[:size] || REDSHIFT_STRING_MAXIMUM_SIZE})"
       end
 
       # The version of the PostgreSQL server, used for determining capability.
       def server_version(server=nil)
         @server_version ||= 80002
       end
+
+      def create_table_suffix_sql(name, options)
+        sql = String.new
+        sql << " DISTSTYLE #{options[:diststyle].upcase}" if options[:diststyle]
+        sql << " DISTKEY(#{options[:distkey]})" if options[:distkey]
+        sql << " SORTKEY(#{Array(options[:sortkey]).join(', ')})" if options[:sortkey]
+        "#{super}#{sql}"
+      end
+
     end
   end
 end
