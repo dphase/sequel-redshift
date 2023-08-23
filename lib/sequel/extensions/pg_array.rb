@@ -445,7 +445,6 @@ module Sequel
           # converter, and return a PGArray with the appropriate database
           # type.
           def call(string)
-            puts @type
             if @redshift_only
               PGArray.new(RsParser.new(string, @converter).parse, @type)
             else
