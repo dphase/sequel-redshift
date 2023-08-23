@@ -298,12 +298,12 @@ module Sequel
           # of parsed (and potentially converted) objects.
           def parse
             raise Sequel::Error, "invalid array, empty string" if eos?
-            raise Sequel::Error, "invalid array, doesn't start with [" unless scan(/((\[\d+:\d+\])+=)?\[/)
+            raise Sequel::Error, "invalid array, doesn't start with {" unless scan(/((\[\d+:\d+\])+=)?\{/)
 
             # :nocov:
             while !eos?
             # :nocov:
-              char = scan(/[\[\]",]|[^\[\]",]+/)
+              char = scan(/[{}",]|[^{}",]+/)
               if char == ','
                 # Comma outside quoted string indicates end of current entry
                 new_entry
@@ -317,21 +317,21 @@ module Sequel
                     @recorded << getch
                   elsif char == '"'
                     n = peek(1)
-                    raise Sequel::Error, "invalid array, closing quote not followed by comma or closing brace" unless n == ',' || n == ']'
+                    raise Sequel::Error, "invalid array, closing quote not followed by comma or closing brace" unless n == ',' || n == '}'
                     break
                   else
                     @recorded << char
                   end
                 end
                 new_entry(true)
-              elsif char == '['
+              elsif char == '{'
                 raise Sequel::Error, "invalid array, opening brace with existing recorded data" unless @recorded.empty?
 
                 # Start of new array, add it to the stack
                 new = []
                 @stack.last << new
                 @stack << new
-              elsif char == ']'
+              elsif char == '}'
                 # End of current array, add current entry to the current array
                 new_entry
 
@@ -353,6 +353,67 @@ module Sequel
 
             raise Sequel::Error, "array parsing finished with array unclosed"
           end
+        end
+      end
+
+      class RsParser < Parser
+
+        def parse
+          raise Sequel::Error, "invalid array, empty string" if eos?
+          raise Sequel::Error, "invalid array, doesn't start with [" unless scan(/((\[\d+:\d+\])+=)?\[/)
+
+          # :nocov:
+          while !eos?
+          # :nocov:
+            char = scan(/[\[\]",]|[^\[\]",]+/)
+            if char == ','
+              # Comma outside quoted string indicates end of current entry
+              new_entry
+            elsif char == '"'
+              raise Sequel::Error, "invalid array, opening quote with existing recorded data" unless @recorded.empty?
+              # :nocov:
+              while true
+              # :nocov:
+                char = scan(/["\\]|[^"\\]+/)
+                if char == '\\'
+                  @recorded << getch
+                elsif char == '"'
+                  n = peek(1)
+                  raise Sequel::Error, "invalid array, closing quote not followed by comma or closing brace" unless n == ',' || n == ']'
+                  break
+                else
+                  @recorded << char
+                end
+              end
+              new_entry(true)
+            elsif char == '['
+              raise Sequel::Error, "invalid array, opening brace with existing recorded data" unless @recorded.empty?
+
+              # Start of new array, add it to the stack
+              new = []
+              @stack.last << new
+              @stack << new
+            elsif char == ']'
+              # End of current array, add current entry to the current array
+              new_entry
+
+              if @stack.length == 1
+                raise Sequel::Error, "array parsing finished without parsing entire string" unless eos?
+
+                # Top level of array, parsing should be over.
+                # Pop current array off stack and return it as result
+                return @stack.pop
+              else
+                # Nested array, pop current array off stack
+                @stack.pop
+              end
+            else
+              # Add the character to the recorded character buffer.
+              @recorded << char
+            end
+          end
+
+          raise Sequel::Error, "array parsing finished with array unclosed"
         end
       end
 
@@ -383,7 +444,11 @@ module Sequel
           # converter, and return a PGArray with the appropriate database
           # type.
           def call(string)
-            PGArray.new(Parser.new(string, @converter).parse, @type)
+            if @type == :redshift?
+              PGArray.new(RsParser.new(string, @converter).parse, @type)
+            else
+              PGArray.new(Parser.new(string, @converter).parse, @type)
+            end
           end
         end
       end
