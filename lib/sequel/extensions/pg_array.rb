@@ -55,7 +55,7 @@ module Sequel
             register_array_type('int2vector', :oid=>1006, :scalar_oid=>22)
             register_array_type('oidvector', :oid=>1013, :scalar_oid=>30)
 
-            register_array_type('super', :oid=>4000, :scalar_oid=>25, :type_symbol=>:string)
+            register_array_type('super', :oid=>4000, :scalar_oid=>25, :type_symbol=>:string, :redshift_only=>true)
 
             [:string_array, :integer_array, :decimal_array, :float_array, :boolean_array, :blob_array, :date_array, :time_array, :datetime_array].each do |v|
               @schema_type_classes[v] = PGArray
@@ -139,7 +139,7 @@ module Sequel
           end
 
           array_type = (opts[:array_type] || db_type).to_s.dup.freeze
-          creator = Creator.new(array_type, converter)
+          creator = Creator.new(array_type, converter, opts[:redshift_only] == true)
           add_conversion_proc(oid, creator)
 
           typecast_method_map[db_type] = :"#{type}_array"
@@ -427,9 +427,10 @@ module Sequel
         attr_reader :type
 
         # Set the type and optional converter callable that will be used.
-        def initialize(type, converter=nil)
+        def initialize(type, converter=nil, redshift_only=false)
           @type = type
           @converter = converter
+          @redshift_only = redshift_only
         end
 
         if Sequel::Postgres.respond_to?(:parse_pg_array)
@@ -445,7 +446,7 @@ module Sequel
           # type.
           def call(string)
             puts @type
-            if @type == :redshift?
+            if @redshift_only
               PGArray.new(RsParser.new(string, @converter).parse, @type)
             else
               PGArray.new(Parser.new(string, @converter).parse, @type)
