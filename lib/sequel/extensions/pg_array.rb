@@ -55,6 +55,8 @@ module Sequel
             register_array_type('int2vector', :oid=>1006, :scalar_oid=>22)
             register_array_type('oidvector', :oid=>1013, :scalar_oid=>30)
 
+            register_array_type('super', :oid=>4000, :scalar_oid=>25, :type_symbol=>:string)
+
             [:string_array, :integer_array, :decimal_array, :float_array, :boolean_array, :blob_array, :date_array, :time_array, :datetime_array].each do |v|
               @schema_type_classes[v] = PGArray
             end
