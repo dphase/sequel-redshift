@@ -298,12 +298,12 @@ module Sequel
           # of parsed (and potentially converted) objects.
           def parse
             raise Sequel::Error, "invalid array, empty string" if eos?
-            raise Sequel::Error, "invalid array, doesn't start with {" unless scan(/((\[\d+:\d+\])+=)?\{/)
+            raise Sequel::Error, "invalid array, doesn't start with [" unless scan(/((\[\d+:\d+\])+=)?\[/)
 
             # :nocov:
             while !eos?
             # :nocov:
-              char = scan(/[{}",]|[^{}",]+/)
+              char = scan(/[\[\]",]|[^\[\]",]+/)
               if char == ','
                 # Comma outside quoted string indicates end of current entry
                 new_entry
@@ -317,21 +317,21 @@ module Sequel
                     @recorded << getch
                   elsif char == '"'
                     n = peek(1)
-                    raise Sequel::Error, "invalid array, closing quote not followed by comma or closing brace" unless n == ',' || n == '}'
+                    raise Sequel::Error, "invalid array, closing quote not followed by comma or closing brace" unless n == ',' || n == ']'
                     break
                   else
                     @recorded << char
                   end
                 end
                 new_entry(true)
-              elsif char == '{'
+              elsif char == '['
                 raise Sequel::Error, "invalid array, opening brace with existing recorded data" unless @recorded.empty?
 
                 # Start of new array, add it to the stack
                 new = []
                 @stack.last << new
                 @stack << new
-              elsif char == '}'
+              elsif char == ']'
                 # End of current array, add current entry to the current array
                 new_entry
 
