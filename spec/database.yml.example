@@ -1,0 +1,6 @@
+adapter: redshift
+database: test1
+username: 
+password: 
+host: r101-dw-production.ck1sr65ao7pg.us-east-1.redshift.amazonaws.com
+port: 5439
