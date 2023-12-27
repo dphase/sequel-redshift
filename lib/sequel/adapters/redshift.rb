@@ -31,13 +31,22 @@ module Sequel
       end
 
       def table_exists?(name)
+        relation_exists?(name, 'r')
+      end
+
+      def view_exists?(name)
+        relation_exists?(name, 'v')
+      end
+
+      # @param [String] relkind 'r' for table, 'v' for view
+      def relation_exists?(name, relkind)
         sql = <<~SQL
           SELECT EXISTS (
             SELECT * FROM pg_catalog.pg_class c
             JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE  n.nspname = 'public'
             AND  c.relname = '#{name}'
-            AND  c.relkind = 'r'
+            AND  c.relkind = '#{relkind}'
           );
         SQL
         fetch(sql).first.fetch(:"?column?")
